@@ -7,7 +7,7 @@ const { app } = require("./sample-app");
 
 // Utility function to run a script and capture the output and exit code.
 function run_script(command, args, callback) {
-    var child = spawn(command, args);
+    var child = spawn(command, args, { shell: true });
 
     var scriptOutput = "";
 
