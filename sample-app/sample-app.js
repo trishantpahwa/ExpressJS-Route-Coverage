@@ -8,11 +8,11 @@ app.get('/', function (req, res) {
     res.json('Hello World');
 });
 
-app.get({ path: '/a', description: "GET Route from a." }, function (req, res) {
+app.get('/a', function (req, res) {
     res.json('Hello World get a');
 });
 
-app.post({ path: '/a', description: "Post Route to a." }, function (req, res) {
+app.post('/a', function (req, res) {
     res.json('Hello World post a');
 });
 

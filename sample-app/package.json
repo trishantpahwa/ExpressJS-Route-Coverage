@@ -1,0 +1,19 @@
+{
+  "name": "sample_app",
+  "version": "1.0.0",
+  "description": "A sample express application.",
+  "main": "sample-app.js",
+  "scripts": {
+    "test": "echo \"Refer to root package.json.\""
+  },
+  "keywords": [
+    "ExpressJS",
+    "Plugin",
+    "CodeCoverage"
+  ],
+  "author": "Trishant Pahwa",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

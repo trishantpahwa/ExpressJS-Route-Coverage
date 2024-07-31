@@ -6,213 +6,174 @@ const figlet = require("figlet");
 const path = require("path");
 const fs = require("fs");
 const registeredRoutes = require("../plugin");
-const { exit } = require("process");
+
+const banner = chalk.yellow(figlet.textSync("ERC", { horizontalLayout: "full" }));
 
 const usage = chalk.keyword("violet")(
-  "\nUsage: erc -p <path>  -v <variable> -o <output> -f <output-file> \n" +
-    boxen(
-      chalk.green(
-        "\n" +
-          "An express JS plugin to print registered routes of an expressJS app." +
-          "\n"
-      ),
-      { padding: 1, borderColor: "green", dimBorder: true }
-    ) +
-    "\n"
+    `${banner}\nUsage: erc -p <path>  -v <variable> -o <output> -f <output-file> \n
+    ${boxen(
+        chalk.green(
+            "\n" +
+            "An express JS plugin to print registered routes of an expressJS app." +
+            "\n"
+        ),
+        { padding: 1, borderColor: "green", dimBorder: true }
+    )}\n`
 );
 
-const options = yargs
-  .usage(usage)
-  .option("p", {
-    alias: "path",
-    describe: "Path to ExpressJS App file",
-    type: "string",
-    demandOption: false,
-  })
-  .option("v", {
-    alias: "variable",
-    describe: "Variable name of ExpressJS App",
-    type: "string",
-    demandOption: false,
-  })
-  .option("o", {
-    alias: "output",
-    describe: "Output type path",
-    type: "string",
-    demandOption: false,
-  })
-  .option("f", {
-    alias: "output-file",
-    describe: "Output file path",
-    type: "string",
-    demandOption: false,
-  })
-  .help(true).argv;
-
-const argv = require("yargs/yargs")(process.argv.slice(2)).argv;
-
-if (argv.path == null && argv.p == null) {
-  console.log(
-    chalk.yellow(figlet.textSync("ERC", { horizontalLayout: "full" }))
-  );
-  yargs.showHelp();
-  return;
-}
-
-if (argv.v == null && argv.variable == null) {
-  console.log(
-    chalk.yellow(figlet.textSync("ERC", { horizontalLayout: "full" }))
-  );
-  yargs.showHelp();
-  return;
-}
-
-let _path = argv.p || argv.path;
-let _variable = argv.v || argv.variable;
-let _output = argv.o || argv.output;
-let _outputFile = argv.f || argv.outputFile;
-
-setTimeout(() => exit(0), 100);
-main();
-
-async function main() {
-  _path = path.resolve(_path);
-  if (!fs.existsSync(_path)) {
-    console.log(
-      chalk.yellow(figlet.textSync("ERC", { horizontalLayout: "full" }))
-    );
-    yargs.showHelp();
-    console.log(`\n\n${chalk.red("File not found")}\n${_path}\n`);
-    return;
-  }
-  let app = null;
-  const data = fs.readFileSync(_path, "utf8");
-  if (data.includes("module.exports")) {
-    const imports = require(_path);
-    if (Object.keys(imports).filter((key) => key === _variable).length === 1) {
-      app = imports[_variable];
-    } else {
-      console.log(chalk.red("Not exporting ExpressJS App variable properly."));
-      return;
+const isOutputFileRequired = () => {
+    const optionsIndex = process.argv.slice(2).indexOf("-o") !== -1 ? process.argv.slice(2).indexOf("-o") : process.argv.slice(2).indexOf("-output");
+    switch (process.argv.slice(2)[optionsIndex + 1]) {
+        case "print":
+            return false;
+        case "json":
+            return true;
+        default:
+            console.log(chalk.red("Invalid output type."));
+            return false;
     }
-  } else {
-    const update = `${data}\nmodule.exports = {${_variable}: ${_variable}};`;
-    const tempFileName = `${_path.substring(
-      0,
-      _path.lastIndexOf("/")
-    )}/.temp.${Math.floor(Math.random() * 1000000)}.js`;
-    const tempFile = fs.writeFileSync(tempFileName, update);
+}
+
+const options = yargs
+    .usage(usage)
+    .option("path", {
+        alias: "p",
+        describe: "Path to ExpressJS App file.",
+        type: "string",
+        demandOption: true,
+    })
+    .option("variable", {
+        alias: "v",
+        describe: "Variable name of ExpressJS App.",
+        type: "string",
+        demandOption: true,
+    })
+    .option("output", {
+        alias: "o",
+        describe: "Output type path.",
+        type: "string",
+        demandOption: true,
+    })
+    .option("output-file", {
+        alias: "f",
+        describe: "Output file path.",
+        type: "string",
+        demandOption: isOutputFileRequired(),
+    })
+    .option("packageJSON", {
+        alias: "j",
+        describe: "Path to package.json file.",
+        type: "string",
+        demandOption: true,
+    })
+    .example("erc -p ./app.js -v app -o print -j package.json", "Print all registered routes.")
+    .example("erc --path ./app.js --variable app --output print --packageJSON package.json", "Print all registered routes.")
+    .example("erc -p ./app.js -v app -o json -f routes.json -j package.json", "Write all registered routes into a JSON file.")
+    .example("erc --path ./app.js --variable app --output json --output-file routes.json --packageJSON package.json", "Write all registered routes into a JSON file.")
+    .argv;
+
+let { path: _path, variable, output, outputFile, packageJSON } = options;
+
+_path = path.resolve(_path);
+packageJSON = require(path.resolve(packageJSON));
+if (!fs.existsSync(_path)) {
+    yargs.showHelp();
+    console.log(`\n\n${chalk.red("File not found")} => ${_path}\n`);
+    return;
+}
+let app = null;
+const data = fs.readFileSync(_path, "utf8");
+if (data.includes("module.exports")) {
+    const imports = require(_path);
+    if (Object.keys(imports).filter((key) => key === variable).length === 1) {
+        app = imports[variable];
+    } else {
+        console.log(chalk.red(`Unable to import ExpressJS App variable properly.\n\nExport the app variable in ${_path} as ${data} \n\nmodule.exports = { ${variable} };`));
+        return;
+    }
+} else {
+    const update = `${data}\nmodule.exports = { ${variable} };`;
+    const tempFileName = `${_path.substring(0, _path.lastIndexOf("/"))}/.temp.${Math.floor(Math.random() * 1000000)}.js`;
+    fs.writeFileSync(tempFileName, update);
     const imports = require(path.resolve(tempFileName));
-    app = imports[_variable];
-    await fs.unlinkSync(tempFileName);
-  }
-  if (app == null) {
+    app = imports[variable];
+    fs.unlinkSync(tempFileName);
+}
+if (app == null) {
     console.log(chalk.red("Unable to link with Express App properly."));
     return;
-  }
-  const routes = registeredRoutes(app);
-  if (_output) {
-    switch (_output) {
-      case "json":
-        if (_outputFile) {
-          const fs = require("fs");
-          fs.writeFileSync(_outputFile, JSON.stringify({ routes }, null, 2));
-        } else {
-          console.log(JSON.stringify(routes, null, 2));
-        }
-        break;
-      case "print":
-        routes.map((route) => {
-          const _route = route.split(" ");
-          const method = _route[0];
-          const description = _route.length > 4 ? _route[2] + " " + _route[3] : false;
-          const __path = _route[1];
-          if (method === "GET") {
-            console.log(
-              `${chalk.bgGrey(chalk.greenBright(method))}\t${chalk.whiteBright(
-                __path
-              )}${description ? " " + chalk.cyanBright(description) : ""}`
-            );
-          } else if (method === "POST") {
-            console.log(
-              `${chalk.bgGrey(chalk.blueBright(method))}\t${chalk.whiteBright(
-                __path
-              )}${description ? " " + chalk.cyanBright(description) : ""}`
-            );
-          } else if (method === "PUT") {
-            console.log(
-              `${chalk.bgGrey(chalk.yellowBright(method))}\t${chalk.whiteBright(
-                __path
-              )}${description ? " " + chalk.cyanBright(description) : ""}`
-            );
-          } else if (method === "PATCH") {
-            console.log(
-              `${chalk.bgGrey(
-                chalk.magentaBright(method)
-              )}\t${chalk.whiteBright(__path)}`
-            );
-          } else if (method === "DELETE") {
-            console.log(
-              `${chalk.bgGrey(chalk.redBright(method))}\t${chalk.whiteBright(
-                __path
-              )}${description ? " " + chalk.cyanBright(description) : ""}`
-            );
-          } else {
-            console.log(
-              `${chalk.bgGrey(chalk.grayBright(method))}\t${chalk.whiteBright(
-                __path
-              )}${description ? " " + chalk.cyanBright(description) : ""}`
-            );
-          }
-        });
-        break;
-      default:
-        console.log(chalk.red("Invalid output type"));
-        break;
+}
+const routes = registeredRoutes(app, packageJSON);
+if (output) {
+    switch (output) {
+        case "json":
+            const fs = require("fs");
+            fs.writeFileSync(outputFile, JSON.stringify({ routes }, null, 2));
+            break;
+        case "print":
+            routes.map((route) => {
+                const _route = route.split("   =>   ");
+                const method = _route[0];
+                const __path = _route[1];
+                printRoute(method, __path);
+            });
+            break;
+        default:
+            console.log(chalk.red("Invalid output type."));
+            break;
     }
-  } else {
+} else {
     routes.map((route) => {
-      const _route = route.split(" ");
-      const method = _route[0];
-      const __path = _route[1];
-      if (method === "GET") {
-        console.log(
-          `${chalk.bgGrey(chalk.greenBright(method))}\t${chalk.whiteBright(
-            __path
-          )}`
-        );
-      } else if (method === "POST") {
-        console.log(
-          `${chalk.bgGrey(chalk.blueBright(method))}\t${chalk.whiteBright(
-            __path
-          )}`
-        );
-      } else if (method === "PUT") {
-        console.log(
-          `${chalk.bgGrey(chalk.yellowBright(method))}\t${chalk.whiteBright(
-            __path
-          )}`
-        );
-      } else if (method === "PATCH") {
-        console.log(
-          `${chalk.bgGrey(chalk.magentaBright(method))}\t${chalk.whiteBright(
-            __path
-          )}`
-        );
-      } else if (method === "DELETE") {
-        console.log(
-          `${chalk.bgGrey(chalk.redBright(method))}\t${chalk.whiteBright(
-            __path
-          )}`
-        );
-      } else {
-        console.log(
-          `${chalk.bgGrey(chalk.grayBright(method))}\t${chalk.whiteBright(
-            __path
-          )}`
-        );
-      }
+        const _route = route.split(" ");
+        const method = _route[0];
+        const __path = _route[1];
+        printRoute(method, __path);
     });
-  }
-  return routes;
+}
+
+function printRoute(method, __path) {
+    switch (method) {
+        case "GET":
+            console.log(
+                `${chalk.bgGrey(chalk.greenBright(method))}\t${chalk.whiteBright(
+                    __path
+                )}`
+            );
+            break;
+        case "POST":
+            console.log(
+                `${chalk.bgGrey(chalk.blueBright(method))}\t${chalk.whiteBright(
+                    __path
+                )}`
+            );
+            break;
+        case "PUT":
+            console.log(
+                `${chalk.bgGrey(chalk.yellowBright(method))}\t${chalk.whiteBright(
+                    __path
+                )}`
+            );
+            break;
+        case "PATCH":
+            console.log(
+                `${chalk.bgGrey(chalk.magentaBright(method))}\t${chalk.whiteBright(
+                    __path
+                )}`
+            );
+            break;
+        case "DELETE":
+            console.log(
+                `${chalk.bgGrey(chalk.redBright(method))}\t${chalk.whiteBright(
+                    __path
+                )}`
+            );
+            break;
+        default:
+            console.log(
+                `${chalk.bgGrey(chalk.grayBright(method))}\t${chalk.whiteBright(
+                    __path
+                )}`
+            );
+            break;
+    }
 }
