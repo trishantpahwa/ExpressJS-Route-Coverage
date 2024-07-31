@@ -1,6 +1,6 @@
 {
   "name": "expressjs-route-coverage",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "An express JS plugin to print registered routes of an expressJS app.",
   "main": "index.js",
   "bin": {
@@ -31,7 +31,6 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "express": "^4.18.2",
     "mocha": "^10.2.0"
   }
 }
