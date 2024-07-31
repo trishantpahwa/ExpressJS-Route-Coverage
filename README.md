@@ -1,7 +1,10 @@
 # ExpressJS-Route-Coverage
+
     An express JS plugin to print registered routes of an expressJS app.
-    
+
 This project is inspired by the following [Stack Overflow Answer](https://stackoverflow.com/a/46397967/6072570).
+
+> Later I realised it should have been better to refer this link [List All Routes in express app](https://github.com/expressjs/express/issues/3308).
 
 > Only supports `express: ^4.18.2`.
 
@@ -13,10 +16,12 @@ This project is inspired by the following [Stack Overflow Answer](https://stacko
 ## Installation
 
 ### CLI
+
     # On your terminal, run the following command:
     npm i -g expressjs-route-coverage
 
 ### ExpressJS application development plugin
+
     # On your terminal, run the following command:
     npm i -D expressjs-route-coverage
     # Add the following script to your `package.json` file:
@@ -25,6 +30,7 @@ This project is inspired by the following [Stack Overflow Answer](https://stacko
     }
 
 > A good way is to add it before the mocha command in your `package.json` file.
+
 ```
     "scripts": {
         "test": "erc -p <path> -v <variable> -o <output> -f <output-file> && mocha",
@@ -32,20 +38,21 @@ This project is inspired by the following [Stack Overflow Answer](https://stacko
 ```
 
 ### ExpressJS application middleware plugin
+
     # On your terminal, run the following command:
     npm i expressjs-route-coverage
-
 
 ## Usage
 
 ### CLI
+
 ```
-  _____   ____     ____ 
+  _____   ____     ____
  | ____| |  _ \   / ___|
- |  _|   | |_) | | |    
- | |___  |  _ <  | |___ 
+ |  _|   | |_) | | |
+ | |___  |  _ <  | |___
  |_____| |_| \_\  \____|
-                        
+
 
 Usage: erc -p <path>  -v <variable> -o <output> -f <output-file>
 ┌──────────────────────────────────────────────────────────────────────────┐
@@ -65,16 +72,19 @@ Options:
   -f, --output-file  Output file path
       --help         Show help                                         [boolean]
 ```
+
 > Example
 
     erc -p ../my-express-api/app.js -v app -o json -f ../my-express-api/routes.json
-    
+
     # or
-    
+
     npm run log-routes -p ../my-express-api/app.js -v app -o json -f ../my-express-api/routes.json
 
 ### ExpressJS application plugin
+
     In your ExpressJS application, add the following code at the end of the file:
+
 ```
     const express = require('express');
     const { logRegisteredRoutes } = require('expressjs-route-coverage');
@@ -87,6 +97,5 @@ Options:
     .
     console.log(logRegisteredRoutes(app));
 ```
-
 
 Developed by [Trishant Pahwa](https://trishantpahwa.me) at [KodeKrew Technologies](https://kodekrew.com).
