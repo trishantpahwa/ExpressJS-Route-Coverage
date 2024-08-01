@@ -10,7 +10,7 @@ const registeredRoutes = require("../plugin");
 const banner = chalk.yellow(figlet.textSync("ERC", { horizontalLayout: "full" }));
 
 const usage = chalk.keyword("violet")(
-    `${banner}\nUsage: erc -p <path>  -v <variable> -o <output> -f <output-file> \n
+    `${banner}\n Usage: erc -p <path>  -v <variable> -o <output> -f <output-file> -j <package.json> \n
     ${boxen(
         chalk.green(
             "\n" +
