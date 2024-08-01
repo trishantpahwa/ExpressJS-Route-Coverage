@@ -74,13 +74,20 @@ const options = yargs
 
 let { path: _path, variable, output, outputFile, packageJSON } = options;
 
+try {
+    packageJSON = require(path.resolve(packageJSON));
+} catch (error) {
+    console.log(chalk.red("Unable to find package.json file."));
+    return;
+}
+
 _path = path.resolve(_path);
-packageJSON = require(path.resolve(packageJSON));
 if (!fs.existsSync(_path)) {
     yargs.showHelp();
     console.log(`\n\n${chalk.red("File not found")} => ${_path}\n`);
     return;
 }
+
 let app = null;
 const data = fs.readFileSync(_path, "utf8");
 if (data.includes("module.exports")) {
