@@ -107,7 +107,6 @@ const routes = registeredRoutes(app, packageJSON);
 if (output) {
     switch (output) {
         case "json":
-            const fs = require("fs");
             fs.writeFileSync(outputFile, JSON.stringify({ routes }, null, 2));
             break;
         case "print":
