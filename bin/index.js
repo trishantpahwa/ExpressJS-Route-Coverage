@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 const chalk = require("chalk");
 const boxen = require("boxen");
 const yargs = require("yargs");
@@ -10,7 +10,7 @@ const registeredRoutes = require("../plugin");
 const banner = chalk.yellow(figlet.textSync("ERC", { horizontalLayout: "full" }));
 
 const usage = chalk.keyword("violet")(
-    `${banner}\nUsage: erc -p <path>  -v <variable> -o <output> -f <output-file> \n
+    `${banner}\n Usage: erc -p <path>  -v <variable> -o <output> -f <output-file> -j <package.json> \n
     ${boxen(
         chalk.green(
             "\n" +
@@ -24,18 +24,22 @@ const usage = chalk.keyword("violet")(
 const isOutputFileRequired = () => {
     const optionsIndex = process.argv.slice(2).indexOf("-o") !== -1 ? process.argv.slice(2).indexOf("-o") : process.argv.slice(2).indexOf("-output");
     switch (process.argv.slice(2)[optionsIndex + 1]) {
+        case "--help":
+            return false;
         case "print":
             return false;
         case "json":
             return true;
         default:
-            console.log(chalk.red("Invalid output type."));
+            if (optionsIndex !== -1)
+                console.log(chalk.red("Invalid output type."));
             return false;
     }
 }
 
 const options = yargs
     .usage(usage)
+    .help("help")
     .option("path", {
         alias: "p",
         describe: "Path to ExpressJS App file.",
@@ -107,7 +111,6 @@ const routes = registeredRoutes(app, packageJSON);
 if (output) {
     switch (output) {
         case "json":
-            const fs = require("fs");
             fs.writeFileSync(outputFile, JSON.stringify({ routes }, null, 2));
             break;
         case "print":
