@@ -10,41 +10,50 @@ function registeredRoutes(app, packageJSON) {
 }
 
 function getRoutes(app) {
-  // Initialize the base path as empty string and start from app._router.stack
+  // Use reduce to accumulate routes into a single array
   return app._router.stack.reduce((routes, layer) => {
     return routes.concat(getRoutesFromLayer(layer, ''));
   }, []);
 }
 
 function getRoutesFromLayer(layer, parentPath) {
-  // If this layer has a route, return the route's path and methods
+  // If this layer has a route, format it as 'METHOD   =>   /path'
   if (layer.route) {
     const path = layer.route.path;
     const methods = Object.keys(layer.route.methods);
-    return methods.map((method) => `${method.toUpperCase()}   =>   ${encodeURI(parentPath + path)}`);
+    // Format each method with its path
+    return methods.map((method) => `${method.toUpperCase()}   =>   ${ensureSlash(parentPath + path)}`);
   }
 
-  // If this layer has nested routers, process them iteratively
+  // If this layer is a nested router, process its stack recursively
   if (layer.name === 'router' && layer.handle && layer.handle.stack) {
-    const nestedPath = extractPathFromRegexp(layer.regexp);  // Convert regex to string path
-    // Reduce the nested layers (from router) to collect routes
+    const nestedPath = ensureSlash(parentPath + extractPathFromRegexp(layer.regexp));  // Convert regex to path string
     return layer.handle.stack.reduce((nestedRoutes, nestedLayer) => {
-      return nestedRoutes.concat(getRoutesFromLayer(nestedLayer, parentPath + nestedPath));
+      return nestedRoutes.concat(getRoutesFromLayer(nestedLayer, nestedPath));
     }, []);
   }
 
-  // If the layer doesn't match a route or router, return an empty array
   return [];
 }
 
-// Helper function to extract the path from the layer's regexp
+// Ensure correct slashing between parentPath and path segments
+function ensureSlash(path) {
+  if (!path.startsWith('/')) {
+    path = '/' + path;  // Ensure the path starts with a '/'
+  }
+  return path.replace(/\/+/g, '/');  // Ensure there's exactly one slash between parts
+}
+
+// Helper function to convert Express's path regex to a string
 function extractPathFromRegexp(regexp) {
   const path = regexp
     .toString()
-    .replace('/^\\/', '')  // Remove the regex start characters
-    .replace('\\/?(?=\\/|$)/i', '')  // Remove the regex end characters
-    .replace(/\\\//g, '/');  // Replace escaped slashes with regular slashes
+    .replace('/^\\/', '/')  // Ensure path starts with '/'
+    .replace('\\/?(?=\\/|$)/i', '')  // Remove end regex characters
+    .replace(/\\\//g, '/')  // Convert escaped slashes to normal slashes
+    .replace(/\/$/, '');  // Remove trailing slash
   return path;
 }
+
 
 module.exports = registeredRoutes;
