@@ -11,7 +11,7 @@ This project is inspired by the following [Stack Overflow Answer](https://stacko
 ![Made with love in India](https://madewithlove.now.sh/in?heart=true&template=for-the-badge) `&& ` ![javascript](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E)
 
 ![npm](https://img.shields.io/npm/dw/expressjs-route-coverage?style=for-the-badge)
-[![code-sandbox](https://img.shields.io/badge/Codesandbox-000000?style=for-the-badge&logo=CodeSandbox&logoColor=white)](https://codesandbox.io/p/sandbox/billowing-violet-x2vit4)
+[![code-sandbox](https://img.shields.io/badge/Codesandbox-000000?style=for-the-badge&logo=CodeSandbox&logoColor=white)](https://codesandbox.io/p/devbox/expressjs-route-coverage-forked-jfxnf9)
 
 ## Installation
 
@@ -121,3 +121,4 @@ Examples:
 -   [ ] Add output option to allow pipelining with other commands.
 
 Developed by [Trishant Pahwa](https://trishantpahwa.me) at [KodeKrew Technologies](https://kodekrew.com).
+
